@@ -1,0 +1,73 @@
+\documentclass{article}
+\input{figure-page.tex}
+\usetikzlibrary{arrows.meta}
+\definecolor{ink}{HTML}{243B45}
+\definecolor{ins}{HTML}{4D656E}
+\definecolor{face}{HTML}{EDF3F2}
+\definecolor{edge}{HTML}{A6B7B8}
+\definecolor{copper}{HTML}{A84629}
+\definecolor{copperTop}{HTML}{D57F53}
+\definecolor{blue}{HTML}{26566A}
+\definecolor{blueTop}{HTML}{58879A}
+\begin{document}\startplot
+\begin{tikzpicture}[x=1cm,y=1cm,inner sep=0pt,outer sep=0pt,
+  insulation/.style={draw=ins,line width=.7pt,dash pattern=on 3.3pt off 1.8pt},
+  endmark/.style={text=black,font=\small}]
+  \path[use as bounding box] (0,0) rectangle (13.55,5.4);
+  % Affine view of the (x1,x2) plane. The domain is 2 by 1 in model coordinates.
+  \begin{scope}[shift={(2.62,1.80)},x={(3.68cm,-.61cm)},y={(1.58cm,3.05cm)}]
+    \coordinate (O) at (0,0);
+    \coordinate (B) at (2,0);
+    \coordinate (C) at (2,1);
+    \coordinate (D) at (0,1);
+    \coordinate (L) at (0,.25);
+    \coordinate (H) at (0,.75);
+
+    % A shallow rim gives the top face a visible front edge.
+    \filldraw[fill=edge!52,draw=edge,line width=.35pt]
+      (O) -- (B) -- ([yshift=-6pt]B) -- ([yshift=-6pt]O) -- cycle;
+    \filldraw[fill=edge,draw=edge,line width=.35pt]
+      (B) -- (C) -- ([yshift=-6pt]C) -- ([yshift=-6pt]B) -- cycle;
+    \fill[face] (O) -- (B) -- (C) -- (D) -- cycle;
+    \draw[insulation] (H) -- (D) -- (C);
+    \draw[insulation] (L) -- (O) -- (B);
+
+    % The metal strips touch the two Dirichlet edges from outside the domain.
+    \filldraw[fill=copperTop,draw=copper,line width=.5pt]
+      (-.078,.25) -- (L) -- (H) -- (-.078,.75) -- cycle;
+    \fill[copper] (-.078,.25) -- (L) -- ([yshift=-3pt]L)
+      -- ([yshift=-3pt]-.078,.25) -- cycle;
+    \draw[copper,line width=1.2pt] (L) -- (H);
+    \filldraw[fill=blueTop,draw=blue,line width=.5pt]
+      (B) -- (2.065,0) -- (2.065,1) -- (C) -- cycle;
+    \fill[blue] (2.065,0) -- (2.065,1) -- ([yshift=-6pt]2.065,1)
+      -- ([yshift=-6pt]2.065,0) -- cycle;
+    \fill[blue!85] (B) -- (2.065,0) -- ([yshift=-6pt]2.065,0)
+      -- ([yshift=-6pt]B) -- cycle;
+
+    % The outward unit normal at the active contact is parallel to -x1.
+    \draw[copper,line width=.95pt,-{Stealth[length=5pt,width=4.3pt]}]
+      (0,.5) -- (-.29,.5) node[pos=.64,above=3pt,text=black] {$\mathbf n$};
+    \foreach \y/\labeltext in {.25/{1/4},.75/{3/4}}{
+      \draw[copper!65,line width=.5pt] (0,\y) -- (.075,\y);
+      \node[anchor=west,endmark] at (.10,\y) {$x_2=\labeltext$};
+    }
+
+    \node[text=black,font=\large] at (1.07,.51) {$\Omega=(0,2)\times(0,1)$};
+    \node[anchor=south,rotate=-9.4,text=black,font=\normalsize] at (.94,1.055)
+      {Insulated boundary\enspace $\Gamma_N,\ \partial_nu=0$};
+    \node[endmark,anchor=north east] at ([xshift=3pt,yshift=-9pt]O) {$(0,0)$};
+    \node[endmark,anchor=north] at ([xshift=1pt,yshift=-8pt]B) {$(2,0)$};
+  \end{scope}
+
+  \node[anchor=east,text=black,font=\sffamily\normalsize] at (2.95,3.95) {Partial electrode};
+  \node[anchor=east,text=black] at (2.12,3.37) {$\Gamma_c,\quad u=b$};
+
+  % The reference electrode is grounded; its lead runs in the +x1 direction.
+  \draw[blue,line width=.8pt] (11.00,2.07) -- (11.75,1.95) -- (11.75,1.65);
+  \foreach \level/\width in {1.65/.19,1.58/.13,1.51/.065}
+    \draw[blue,line width=.8pt] (11.75-\width,\level) -- (11.75+\width,\level);
+  \node[anchor=west,text=black,font=\sffamily\normalsize] at (11.45,2.72) {Grounded electrode};
+  \node[anchor=west,text=black] at (11.69,2.32) {$\Gamma_0,\quad u=0$};
+\end{tikzpicture}
+\finishplot\end{document}

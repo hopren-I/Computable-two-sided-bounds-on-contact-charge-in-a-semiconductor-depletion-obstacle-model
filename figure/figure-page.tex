@@ -1,0 +1,9 @@
+% Use the TikZ bounding box as the PDF page size (pdfLaTeX).
+\usepackage{tikz}
+\newsavebox{\plotbox}
+\newcommand{\startplot}{\begin{lrbox}{\plotbox}\ignorespaces}
+\newcommand{\finishplot}{\unskip\end{lrbox}%
+  \pdfhorigin=2pt\pdfvorigin=2pt
+  \pdfpagewidth=\dimexpr\wd\plotbox+4pt\relax
+  \pdfpageheight=\dimexpr\ht\plotbox+\dp\plotbox+4pt\relax
+  \shipout\box\plotbox}
