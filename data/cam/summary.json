@@ -1,0 +1,37 @@
+{
+  "python": "3.12.13",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "numpy": "2.4.6",
+  "scipy": "1.17.1",
+  "matplotlib": "3.9.4",
+  "seconds": 493.59400000000096,
+  "tables": {
+    "printed": 171,
+    "roundoff_tolerance": 2
+  },
+  "prose": {
+    "printed": 18,
+    "within_approximation": 1
+  },
+  "values": {
+    "matched_initial_lo": 0.8163242647627862,
+    "matched_initial_hi": 0.9808655051612827,
+    "matched_refined_lo": 0.8256406097614923,
+    "matched_refined_hi": 0.9702599276550076,
+    "narrowing_min_pct": 7.622821914329336,
+    "narrowing_max_pct": 12.349181100862461,
+    "finest_Q_mixed": 0.8957566390225183,
+    "finest_initial_lo": 0.8671066704130758,
+    "finest_initial_hi": 0.9250845340637227,
+    "last_Q_difference": 1.5565076776691278e-05,
+    "largest_center_error_pct": 3.7644301924477603,
+    "Q2_T": 0.3280777290624271,
+    "Q2_L": 0.11979767841889187,
+    "Q2_gap": 0.00016532838743382738,
+    "Q2_initial_lo": 0.8749199605588757,
+    "Q2_initial_hi": 0.9165816693664003,
+    "Q2_step_ratio": 0.03174682789851705,
+    "Q2_width_pct": 4.650926721868519,
+    "full_edge_3_initial_width": 0.009666220009046544
+  }
+}

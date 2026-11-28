@@ -1,57 +1,46 @@
-# Computable two-sided bounds on contact charge in a semiconductor depletion obstacle model
+# Single-bias primal-dual bounds for electrode charge in a depletion obstacle model
 
-Numerical experiments and underlying data for the manuscript by Siyuan Chen and Lipu Zhang. The CSV files contain the primal and dual energies, charge interval endpoints, mesh and bias parameters, and reference values used in the paper. The code reproduces the one-dimensional and two-dimensional tests and compares the recomputed values with the archived records.
+This repository reproduces Tables 1–6, the numerical comparisons in Section 5, and the boundary-geometry diagram in Figure 1 of the CAM manuscript. All numerical inputs are specified in the source. No external dataset or manuscript files are required.
 
-## Run the experiments
+## Recompute the CAM results
 
-Use Python 3.12 on macOS or Linux (including WSL). From the repository root:
+With Python 3.12 in an activated environment, run these commands from the repository root on Windows, macOS, or Linux:
 
 ```sh
-python3.12 -m venv .venv
-. .venv/bin/activate
 python -m pip install -r requirements.txt
-python verification/check_paper.py
-sh reproduce.sh quick
+python reproduce_cam.py
 ```
 
-The first check uses only the Python standard library. It checks the five printed tables, the coordinates of Figure 3 and selected values quoted in the text against the archived CSVs. The quick run executes the solver regression tests, one-dimensional sweeps, both literature benchmarks, and small-mesh step-selection and flux-recovery experiments. It reads the archived large two-dimensional sweeps for the remaining comparisons.
+The program creates a new directory under `runs/` and prints its location. To choose a new output directory, use `python reproduce_cam.py --output my-cam-run`. The largest solve assembles the mixed system on a 1024 × 512 mesh and uses sparse direct factorization. Allow ample memory and several minutes. The earlier implementation recorded about 15.3 GB of peak memory on a related fine-mesh run.
 
-To recompute all numerical experiments, including the largest mesh:
+The solver generates the fields and table values before comparing them with the printed manuscript. The command exits with an error if a field check or numerical comparison fails. A verified full run is distributed in [data/cam](data/cam). Its [comparison.csv](data/cam/comparison.csv) gives the published value, computed value, and outcome for each comparison. [summary.json](data/cam/summary.json) records software versions, elapsed time, and numerical results quoted in the text.
+
+## Experiments and outputs
+
+| Section | Output | Calculation |
+| --- | --- | --- |
+| 5.1 | `table1.csv` | Exact charge and both interval endpoints at seven biases on 128 linear elements. |
+| 5.2 | `table2.csv` | Partial electrode on 128 × 64 cells. Compares the central interval, its refinement at the predicted step, and a scan over three prescribed steps. |
+| 5.2 | `table3.csv` | Six fresh bilinear-potential / RT0-flux solves up to 1024 × 512. Width percentages use the recomputed 512 × 256 charge. |
+| 5.3 | `table4.csv` | Contact reactions on uniform and graded grids and the graded primal energies. Five levels and two mesh families give ten quadratic Bernstein solves. |
+| 5.3 | `summary.json` | Combines the 256 × 128 graded quadratic potential with the independently computed 1024 × 512 RT0 dual field. Reports the gap, endpoints, step and normalized width. |
+| 5.4 | `table5.csv` | Full-edge fixed-step bounds, midpoint errors and width decomposition. Each CSV row is one bias, corresponding to a column in the article. |
+| 5.5 | `table6.csv` | Recovered charge and error along the feasible dual path for the 64-element one-dimensional problem. |
+
+The full run also writes the central fields and their residuals to `matched_centers.csv`, `refinement_fields.csv`, `bernstein_fields.csv` and `full_edge_fields.csv`. Neighboring energies used in Section 5.2 are in `matched_neighbors.csv`. These files hold scalar diagnostics for each solve. The implementation is in [code/cam](code/cam) and reuses the finite-element and flux solvers in [code/legacy/src](code/legacy/src).
+
+## Numerical verification
+
+The printed values used for verification are in [verification/cam](verification/cam). Table entries are compared to half a unit in the last printed place. The symbol “≈0” in Table 5 means absolute value below 10⁻¹². For the midpoint error at bias 3 and its percentage, the checker also accepts an absolute charge-error difference up to 10⁻¹¹, scaled into percentage units for the latter. Both entries depend on the same subtraction close to machine precision. The comparison records flag any use of this tolerance. For the prose description “about 1.5 × 10⁻⁵”, the absolute tolerance is 10⁻⁶.
+
+The program also checks interval containment, width decomposition, equilibrium and optimality residuals. For quadratic elements it checks energies by independent tensor Gauss integration and compares the work identity with the assembled contact reaction. These are floating-point checks. The targeted CAM regressions run in seconds:
 
 ```sh
-sh reproduce.sh full
+python -m unittest discover -s verification -p test_cam.py -v
 ```
 
-The full run solves all five base meshes, the separate full-edge cases and the partial-electrode extension on the 1024 × 512 mesh. The original project's recorded peak memory for the full-edge and extension stage was about 15.3 GB. Allow additional memory for the operating system. Each run prints the path to a fresh directory under `runs/`. Its `data/`, `result/`, `verification/` and `logs/` directories contain the new records and checks. The distributed data remain available for comparison. To select another installed interpreter, set `PYTHON` to its absolute path.
+## Geometry figure and earlier manuscript
 
-## Experiments and records
+[figure/CAM-Fig1.tex](figure/CAM-Fig1.tex) is the standalone TikZ source for CAM Figure 1. The [compiled figure](figure/CAM-Fig1.pdf) is included. To regenerate it, run `pdflatex -halt-on-error CAM-Fig1.tex` from the `figure/` directory with a LaTeX installation that includes TikZ and standalone.
 
-Paths in the third column identify the archived records at the repository root and the corresponding outputs under a run directory. Within a row, filenames without a directory share the directory of the first filename.
-
-| Manuscript item | Calculation | Numerical record |
-|---|---|---|
-| Table 1, three one-dimensional literature loads | `code/supplement/hv2013_intervals.py` computes 36 intervals and compares them with charges derived from endpoint derivatives. | `result/hv2013_1d_intervals.csv` |
-| Figure 1, bias-step sweep and branch tests | `code/experiments.py` evaluates the 1D potential and equilibrated flux, scans the step size and checks the transition between partial and full depletion. | `data/one_dimensional_samples.csv`, `one_dimensional_bounds.csv`, `branch_transition_bounds.csv` |
-| Figure 2 | Boundary geometry and mixed boundary conditions for the partial electrode. | `figure/contact-geometry.tex` |
-| Figure 3 and Table 2, partial electrode | `code/experiments.py` computes 175 field pairs and 75 intervals on five meshes. `code/explanation_materials.py` also checks the fine-mesh values against the inputs in `data/original/`. | `data/two_dimensional_samples.csv`, `two_dimensional_bounds.csv`, `two_dimensional_summary.csv` |
-| Table 3, sixth mesh | `code/verify_2d_exact.py` extends the partial-electrode experiment to 1024 × 512 at bias 0.5. The narrowest interval is [0.870759, 0.921227] at the precision reported in the paper. | `data/two_dimensional_extension_samples.csv`, `two_dimensional_extension_bounds.csv` |
-| Figure 4 and Table 4, full-edge electrode | `code/verify_2d_exact.py` tests the analytical charge at eight biases on five meshes. `code/supplement/review_experiments.py` decomposes the widths of the 120 intervals. | `data/two_dimensional_full_contact_samples.csv`, `two_dimensional_full_contact_bounds.csv`, and `result/truth_decomposition.csv` |
-| Table 5, circular free boundary | `code/supplement/hv2014_disk.py` solves the disk benchmark on four meshes and compares the contact radius and displacement energy with their analytical values. | `result/hv2014_disk.csv` |
-| Step search and RT0 flux optimization | `code/supplement/review_experiments.py` and `rt0_comparison.py` compare fixed candidate steps, sequential step search and optimization of the central flux. | `result/step_benchmark.csv`, `step_trace.csv`, `recovery_comparison.csv`, `small_samples.csv` |
-| Additional numerical consistency checks | `code/experiments.py` checks the counterexample for recovered charge, and `code/verify_theory.py` runs algebraic and numerical checks. | `data/counterexample.csv`; generated JSON reports under the run's `verification/` |
-
-The fixed inputs under `data/original/` are independent comparison records for the fine-mesh audit. Core finite-element routines and regression tests are under `code/legacy/`. The two literature benchmarks are from [Harasim and Valdman (1D)](https://dml.cz/handle/10338.dmlcz/143522) and [Harasim and Valdman (2D)](https://doi.org/10.14736/kyb-2014-6-0978).
-
-## Rebuild the figures
-
-Install pdfLaTeX with TikZ in addition to the Python dependencies. Then run:
-
-```sh
-sh reproduce.sh figures
-```
-
-The command writes four English figure PDFs under the run's `figure/` directory. Figures 1 and 4 are generated from the archived CSVs. Figure 2 is a geometry diagram. Figure 3 uses the vector coordinates saved with the manuscript. The numerical checker reads these coordinates back and verifies all 25 main intervals, 25 relative widths and five inset intervals.
-
-## Numerical comparison
-
-`verification/compare_results.py` compares the 18 archived output CSVs with the files in a run directory, matching field names, row order and values with an absolute tolerance of 1e-9. Timing columns vary with hardware and are excluded. `verification/check_paper.py` separately checks values at the precision printed in the manuscript, using the table rows and short numerical excerpts under `verification/`. For the partial electrode, the finest-mesh recovered charge is a numerical reference. Analytical charge values are available for the one-dimensional and full-edge benchmarks.
+The [earlier manuscript README](README_ERA.md) documents the original tables, scripts and archived data. The historical shell commands retain their original behavior. On systems with a POSIX shell, `sh reproduce.sh cam` calls the same CAM entry point.

@@ -3,7 +3,11 @@ set -eu
 root=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 python_bin=${PYTHON:-python3}
 mode=${1:-quick}
-case "$mode" in quick|full|figures) ;; *) echo "Usage: sh reproduce.sh [quick|full|figures]" >&2; exit 2;; esac
+if [ "$mode" = cam ]; then
+    shift
+    exec "$python_bin" "$root/reproduce_cam.py" "$@"
+fi
+case "$mode" in quick|full|figures) ;; *) echo "Usage: sh reproduce.sh [cam|quick|full|figures]" >&2; exit 2;; esac
 mkdir -p "$root/runs"
 work=$(mktemp -d "$root/runs/$mode.XXXXXX")
 printf 'Run directory: %s\n' "$work"
